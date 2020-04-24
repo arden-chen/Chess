@@ -1,20 +1,38 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Chess.FSM;
+using System.Collections.Generic;
+using Chess.Views;
 
 namespace Chess
 {
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class ChessGame : Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private SpriteBatch spriteBatch;
+        private RenderTarget2D screen;
 
-        public Game1()
+        private int _WIDTH = 256;
+        private int _HEIGHT = 128;
+        private int scale = 8;
+        /// <summary>
+        /// To Keep track of whose turn it is. 
+        /// 0 --> White
+        /// 1 --> Black
+        /// </summary>
+        public int turn;
+
+        private List<BaseView> views = new List<BaseView>();
+
+        public ChessGame()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferWidth = _WIDTH * scale;
+            graphics.PreferredBackBufferHeight = _HEIGHT * scale;
             Content.RootDirectory = "Content";
         }
 
@@ -26,21 +44,16 @@ namespace Chess
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            this.IsMouseVisible = true;
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            screen = new RenderTarget2D(GraphicsDevice, _WIDTH, _HEIGHT);
+
+            turn = 0; // White's turn first
+
+            // Add all views, in correct order
+            views.Add(new BoardView(Content, spriteBatch));
 
             base.Initialize();
-        }
-
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
         }
 
         /// <summary>
@@ -73,9 +86,24 @@ namespace Chess
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.SetRenderTarget(screen);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
+            spriteBatch.Begin();
+
+            foreach (var view in views)
+            {
+                view.Draw();
+            }
+
+            spriteBatch.End();
+
+            GraphicsDevice.SetRenderTarget(null);
+
+            spriteBatch.Begin();
+            spriteBatch.Draw(screen, new Rectangle(0, 0, _WIDTH * scale, _HEIGHT * scale), Color.White);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
