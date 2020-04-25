@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using Chess.FSM;
 using System.Collections.Generic;
 using Chess.Views;
+using Chess.Controllers;
 
 namespace Chess
 {
@@ -19,14 +20,9 @@ namespace Chess
         private int _WIDTH = 256;
         private int _HEIGHT = 128;
         private int scale = 8;
-        /// <summary>
-        /// To Keep track of whose turn it is. 
-        /// 0 --> White
-        /// 1 --> Black
-        /// </summary>
-        public int turn;
 
         private List<BaseView> views = new List<BaseView>();
+        private List<BaseController> controllers = new List<BaseController>();
 
         public ChessGame()
         {
@@ -44,14 +40,13 @@ namespace Chess
         /// </summary>
         protected override void Initialize()
         {
-            this.IsMouseVisible = true;
+            IsMouseVisible = true;
             spriteBatch = new SpriteBatch(GraphicsDevice);
             screen = new RenderTarget2D(GraphicsDevice, _WIDTH, _HEIGHT);
 
-            turn = 0; // White's turn first
-
             // Add all views, in correct order
             views.Add(new BoardView(Content, spriteBatch));
+            views.Add(new PiecesView(Content, spriteBatch));
 
             base.Initialize();
         }

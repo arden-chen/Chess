@@ -22,7 +22,8 @@ namespace Chess.Views
 
         public override void Draw()
         {
-            int counter = 0; // flip between black and white, start with white top left
+            int counter = 0; // flip between black and white, start with white top left 
+
             for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
