@@ -10,10 +10,19 @@ namespace Chess.Models
 {
     class Piece
     {
-        public int row;
-        public int column;
+        public int row; // 0-7
+        public int column; // 0-7
 
-        public string pos;
+        public string pos; // chess notation e.g. e4
+        
+        /// Code to know what kind of piece this is:
+        /// 0 - Pawn
+        /// 1 - Knight
+        /// 2 - Rook
+        /// 3 - Bishop
+        /// 4 - Queen
+        /// 5 - King
+        public int pieceCode;
 
         public Texture2D texture;
 

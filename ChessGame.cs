@@ -21,7 +21,6 @@ namespace Chess
         private int _HEIGHT = 128;
         private int scale = 8;
 
-        private List<BaseView> views = new List<BaseView>();
         private List<BaseController> controllers = new List<BaseController>();
 
         public ChessGame()
@@ -43,10 +42,10 @@ namespace Chess
             IsMouseVisible = true;
             spriteBatch = new SpriteBatch(GraphicsDevice);
             screen = new RenderTarget2D(GraphicsDevice, _WIDTH, _HEIGHT);
+            controllers.Add(new GameController(Content, spriteBatch, scale));
 
-            // Add all views, in correct order
-            views.Add(new BoardView(Content, spriteBatch));
-            views.Add(new PiecesView(Content, spriteBatch));
+            foreach (BaseController c in controllers)
+                c.Initialize();
 
             base.Initialize();
         }
@@ -87,10 +86,8 @@ namespace Chess
             // TODO: Add your drawing code here
             spriteBatch.Begin();
 
-            foreach (var view in views)
-            {
-                view.Draw();
-            }
+            foreach (BaseController c in controllers)
+                c.Draw(gameTime);
 
             spriteBatch.End();
 

@@ -40,5 +40,7 @@ namespace Chess.General
 
             return col + row;
         }
+
+        public static string[] getValidMoves(int piece, string pos, )
     }
 }
