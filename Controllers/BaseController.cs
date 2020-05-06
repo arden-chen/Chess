@@ -10,7 +10,7 @@ namespace Chess.Controllers
     abstract class BaseController
     {
         public abstract void Initialize();
-        public abstract void Update(float deltaTime);
+        public abstract void Update(GameTime gameTime);
 
         public abstract void Draw(GameTime gameTime);
     }

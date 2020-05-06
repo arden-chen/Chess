@@ -8,39 +8,43 @@ namespace Chess.General
 {
     class ChessFunctions
     {
-        public static int[] CoordsToNums(string coords) // e.g. e4
+        public static int[] CoordsToNums(string coords) // e.g. e4 --> [4, 3]
         {
             int row;
             int col;
 
-            row = Char.ConvertToUtf32(coords, 0);
-            row -= 97; 
+            col = Char.ConvertToUtf32(coords, 0);
+            col -= 97; 
 
-            if (row > 7)
+            if (col > 7)
             {
                 throw new FormatException("Invalid Coordinates!");
             }
 
-            if (!int.TryParse(coords.Substring(1), out col))
+            if (!int.TryParse(coords.Substring(1), out row))
             {
+                System.Diagnostics.Debug.WriteLine(coords);
                 throw new FormatException("Invalid Coordinates!");
             }
-            col = 8 - col;            
+            row = 8 - row;            
 
             return new int[] { row, col };
         }
 
         public static string NumsToCoords(int[] nums)
         {
-            string row;
             string col;
+            string row;
 
-            col = Char.ConvertFromUtf32(nums[1] + 97);
-            row = (8 - nums[0]).ToString();
+            col = Char.ConvertFromUtf32(nums[0] + 97);
+            row = (8 - nums[1]).ToString();
 
             return col + row;
         }
 
-        public static string[] getValidMoves(int piece, string pos, )
+        public static string[] getValidMoves(char piece, char[,] boardState)
+        {
+            return null;
+        }
     }
 }

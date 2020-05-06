@@ -70,6 +70,8 @@ namespace Chess
                 Exit();
 
             // TODO: Add your update logic here
+            foreach (BaseController b in controllers)
+                b.Update(gameTime);
 
             base.Update(gameTime);
         }

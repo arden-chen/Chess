@@ -10,21 +10,14 @@ using System.Threading.Tasks;
 
 namespace Chess.Views
 {
+    // Piece Storage
     class PiecesView : BaseView
     {
         private List<Piece> blackPieces = new List<Piece>();
         private List<Piece> whitePieces = new List<Piece>();
 
-        private SpriteBatch SpriteBatch;
-
         public PiecesView(ContentManager contentManager, SpriteBatch spriteBatch, List<Piece> black, List<Piece> white)
             : base(contentManager, spriteBatch)
-        {
-            blackPieces = black;
-            whitePieces = white;
-        }
-
-        public void UpdateBoard(List<Piece> black, List<Piece> white)
         {
             blackPieces = black;
             whitePieces = white;
@@ -34,12 +27,12 @@ namespace Chess.Views
         {
             foreach (Piece p in whitePieces)
             {
-                SpriteBatch.Draw(p.texture, new Rectangle(p.row * 16, p.column * 16, 16, 16), Color.White);
+                SpriteBatch.Draw(p.texture, new Rectangle(p.column * 16, p.row * 16, 16, 16), Color.White);
             }
 
             foreach (Piece p in blackPieces)
             {
-                SpriteBatch.Draw(p.texture, new Rectangle(p.row * 16, p.column * 16, 16, 16), Color.White);
+                SpriteBatch.Draw(p.texture, new Rectangle(p.column * 16, p.row * 16, 16, 16), Color.White);
             }
         }
     }

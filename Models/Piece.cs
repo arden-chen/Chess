@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Chess.General;
+using System.Security.Cryptography;
 
 namespace Chess.Models
 {
@@ -15,25 +16,38 @@ namespace Chess.Models
 
         public string pos; // chess notation e.g. e4
         
-        /// Code to know what kind of piece this is:
-        /// 0 - Pawn
-        /// 1 - Knight
-        /// 2 - Rook
-        /// 3 - Bishop
-        /// 4 - Queen
-        /// 5 - King
-        public int pieceCode;
+        /// Code to know what kind of piece this is: Upper case for white, lower for black
+        /// Pp - Pawn
+        /// Nn - Knight
+        /// Rr - Rook
+        /// Bb - Bishop
+        /// Qq - Queen
+        /// Kk - King
+        public char pieceCode;
 
         public Texture2D texture;
 
-        public Piece(Texture2D tx, string coords)
+        public Piece(Texture2D tx, string coords, char code)
         {
             pos = coords;
             int[] c = ChessFunctions.CoordsToNums(coords);
             row = c[0];
             column = c[1];
-
+            pieceCode = code;
             texture = tx;
+        }
+
+        public override string ToString()
+        {
+            return pieceCode.ToString() + ", at: " + pos + "; row: " + row + ", col: " + column;
+        }
+
+        public void move(string destination)
+        {
+            pos = destination;
+            int[] position = ChessFunctions.CoordsToNums(destination);
+            row = position[0];
+            column = position[1];
         }
     }
 }
