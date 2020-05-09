@@ -26,6 +26,7 @@ namespace Chess.Controllers
         public Piece selected = null;
         public char[,] boardState;
 
+        private Board chessData;
         private ContentManager Content;
         private SpriteBatch spriteBatch;
 
@@ -48,6 +49,9 @@ namespace Chess.Controllers
         {
             loadPieces();
             loadBoard();
+
+            // begin tracking chess data
+            chessData = new Board(boardState);
 
             // Add all views, in correct order
             views["board"] = (new BoardView(Content, spriteBatch));
@@ -94,6 +98,7 @@ namespace Chess.Controllers
                     {
                         // move piece here
                         selected.move(square);
+                        updateBoard(selected.pieceCode, selected.pos, square);
                         selected = null;
                         turn ^= 1;
                     }
@@ -113,6 +118,7 @@ namespace Chess.Controllers
             }
         }
 
+        // get square that user is hovering on
         private string getSquare(MouseState mouseState)
         {
             int x = mouseState.X;
@@ -131,6 +137,15 @@ namespace Chess.Controllers
             // System.Diagnostics.Debug.WriteLine("MouseX: " + mouseState.X + " MouseY: " + mouseState.Y + "; PieceX: " + piecex + "PieceY: " + piecey);
             return (mouseState.X > piecex && mouseState.X < piecex + squareSize
                 && mouseState.Y > piecey && mouseState.Y < piecey + squareSize);
+        }
+
+        private void updateBoard(char piece, string original, string final)
+        {
+            int[] initPos = ChessFunctions.CoordsToNums(original);
+            int[] finalPos = ChessFunctions.CoordsToNums(final);
+
+            boardState[initPos[0], initPos[1]] = '-';
+            boardState[finalPos[0], finalPos[1]] = piece;
         }
 
         // check if mouse position is a valid space for piece to go
