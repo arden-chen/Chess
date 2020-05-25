@@ -26,7 +26,7 @@ namespace Chess.Controllers
         public Piece selected = null;
         public char[,] boardState;
 
-        private Board chessData;
+        private Board board;
         private ContentManager Content;
         private SpriteBatch spriteBatch;
 
@@ -49,20 +49,18 @@ namespace Chess.Controllers
         {
             loadPieces();
             loadBoard();
-
-            // begin tracking chess data
-            chessData = new Board(boardState);
-
             // Add all views, in correct order
-            views["board"] = (new BoardView(Content, spriteBatch));
+            views["board"] = (new BoardView(Content, spriteBatch, selected));
             views["pieces"] = (new PiecesView(Content, spriteBatch, blackPieces, whitePieces));
+            System.Diagnostics.Debug.WriteLine(board.ToString());
         }
 
         public override void Update(GameTime gameTime)
         {
             MouseState state = Mouse.GetState();
             string square = getSquare(state);
-            if (state.LeftButton == ButtonState.Pressed && prevState.LeftButton != ButtonState.Pressed && prevState != null)
+            // check if square is a real square; if it is "" then not a square selected
+            if (!square.Equals("") && state.LeftButton == ButtonState.Pressed && prevState.LeftButton != ButtonState.Pressed && prevState != null)
             {
                 // if no piece selected
                 if (selected == null)
@@ -85,7 +83,7 @@ namespace Chess.Controllers
                         {
                             if (clickedOnPiece(p, state))
                             {
-                                System.Diagnostics.Debug.WriteLine(p.ToString());
+                                // System.Diagnostics.Debug.WriteLine(p.ToString());
                                 selected = p;
                             }
                         }
@@ -94,18 +92,27 @@ namespace Chess.Controllers
                 // piece already selected, selected square must be a square the player tries to move piece to
                 else
                 {
-                    if (true) //checkValidSquare(selected, state)
+                    // get all the moves                    
+                    System.Diagnostics.Debug.WriteLine("moves");
+                    List<String> moves = ChessFunctions.getValidMoves(selected, board);
+                    foreach (string move in moves)
+                    {
+                        System.Diagnostics.Debug.WriteLine(move);
+                    }
+                    if (checkValidSquare(selected, square)) //checkValidSquare(selected, square)
                     {
                         // move piece here
+                        System.Diagnostics.Debug.WriteLine(square);
+                        board.updateBoard(selected.pieceCode, selected.pos, square);
                         selected.move(square);
-                        updateBoard(selected.pieceCode, selected.pos, square);
                         selected = null;
                         turn ^= 1;
+                        System.Diagnostics.Debug.WriteLine(board.ToString());
                     }
                 }
+                // here if square is ""
                 
             }
-
 
             prevState = state;
         }
@@ -139,20 +146,11 @@ namespace Chess.Controllers
                 && mouseState.Y > piecey && mouseState.Y < piecey + squareSize);
         }
 
-        private void updateBoard(char piece, string original, string final)
-        {
-            int[] initPos = ChessFunctions.CoordsToNums(original);
-            int[] finalPos = ChessFunctions.CoordsToNums(final);
-
-            boardState[initPos[0], initPos[1]] = '-';
-            boardState[finalPos[0], finalPos[1]] = piece;
-        }
-
         // check if mouse position is a valid space for piece to go
-        private bool checkValidSquare(Piece p, MouseState mouseState)
+        private bool checkValidSquare(Piece p, String square)
         {
-            string[] moves = ChessFunctions.getValidMoves(p.pieceCode, boardState);
-            return false;
+            List<String> moves = ChessFunctions.getValidMoves(p, board);
+            return moves.Contains(square);
         }
 
         private void loadBoard()
@@ -165,6 +163,7 @@ namespace Chess.Controllers
                                          {'-', '-', '-', '-', '-', '-', '-', '-'},
                                          {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'}, 
                                          {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'} };
+            board = new Board(boardState);
         }
 
         private void loadPieces()
@@ -191,8 +190,6 @@ namespace Chess.Controllers
             blackPieces.Add(bKnight2);
             Piece bRook2 = new Piece(black["blackRook"], "h8", 'r');
             blackPieces.Add(bRook2);
-
-            System.Diagnostics.Debug.WriteLine(bRook2.ToString());
 
             // white pieces
             Piece wRook1 = new Piece(white["whiteRook"], "a1", 'R');

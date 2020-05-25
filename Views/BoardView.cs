@@ -1,4 +1,5 @@
 ﻿using Chess.General;
+using Chess.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,16 +15,16 @@ namespace Chess.Views
     {
         private SpriteSheet Squares;
         private Texture2D selectedTexture;
-        private string selected;
+        private Piece selected;
 
-        public BoardView(ContentManager contentManager, SpriteBatch spriteBatch) 
+        public BoardView(ContentManager contentManager, SpriteBatch spriteBatch, Piece selected) 
             : base(contentManager, spriteBatch)
         {
             var board = ContentManager.Load<Texture2D>("board");
             selectedTexture = contentManager.Load<Texture2D>("selected");
             Squares = new SpriteSheet(16, 16, board, spriteBatch);
 
-            selected = "";
+            this.selected = selected;
         }
 
         public override void Draw()
@@ -41,9 +42,9 @@ namespace Chess.Views
             }
 
             // if square is selected, draw outline
-            if (!selected.Equals(""))
+            if (selected != null)
             {
-                int[] coords = ChessFunctions.CoordsToNums(selected);
+                int[] coords = ChessFunctions.CoordsToNums(selected.pos);
                 SpriteBatch.Draw(selectedTexture, new Rectangle(coords[0] * 16, coords[1] * 16, 16, 16), Color.White);
 
             }

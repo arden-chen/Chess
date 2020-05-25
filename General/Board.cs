@@ -62,17 +62,26 @@ namespace Chess.General
 
             board[initPos[0],initPos[1]] = '-';
             board[finalPos[0],finalPos[1]] = piece;
-
             lastMove = Char.ToLower(piece) + original + " to " + final; // not exactly correct notation; used for data purposes
             // TODO make correct notation
+            System.Diagnostics.Debug.WriteLine(lastMove);
 
+            // print new board
             updateData();
         }
 
         public bool isFilled(string square)
-        {
+        {            
             int[] coords = ChessFunctions.CoordsToNums(square);
-            return !board[coords[0], coords[1]].Equals("-");
+            bool filled = !board[coords[0], coords[1]].Equals('-');
+            // System.Diagnostics.Debug.WriteLine(square + " has: " + board[coords[0], coords[1]]);
+            /*
+            if (filled)
+                System.Diagnostics.Debug.WriteLine(square + " is filled");
+            else
+                System.Diagnostics.Debug.WriteLine(square + " is empty");
+                */
+            return filled;
         }
 
         public Board makeCopy()
@@ -87,6 +96,19 @@ namespace Chess.General
                 whiteCastleQueenside,
                 turn,
                 turnCount);
+        }
+        public override string ToString()
+        {
+            string result = "";
+            for (int i = 0; i < board.GetLength(0); i++)
+            {
+                for (int j = 0; j < board.GetLength(1); j++)
+                {
+                    result += board[i, j];
+                }
+                result += "\n";
+            }
+            return result;
         }
 
         private void updateData()
@@ -138,6 +160,12 @@ namespace Chess.General
             // TODO: check if king is in check
             // use board visualization to check
 
-        }        
+        }
+        
+        public char getSquare(string square)
+        {
+            int[] coords = ChessFunctions.CoordsToNums(square);
+            return board[coords[0], coords[1]];
+        }
     }
 }

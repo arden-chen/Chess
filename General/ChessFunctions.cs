@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Chess.Models;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
@@ -15,25 +17,26 @@ namespace Chess.General
 {
     class ChessFunctions
     {
+        public static bool validateSquare(string square)
+        {
+            int col = Char.ConvertToUtf32(square.Substring(0, 1), 0);
+            int row = Int32.Parse(square.Substring(1));
+            return (col > 96 && col < 105 && row > 0 && row < 9);
+        }
+
         // easy ways to get squares up, down, left, right, diagonally (all from white's perspective)
         public static string getVerticalSquare(string original, int num) // original --> original square, num --> number of squares (can be negative)
         {
             // only deals with rank, so only change int part of string
-            int newRank = int.Parse(original.Substring(1)) + num;
-            if (newRank > 8 || newRank < 1)
-                throw new FormatException("Cannot move that many squares!");
-            else
-                return original.Substring(0, 1) + newRank;
+            int newRank = int.Parse(original.Substring(1)) + num;        
+            return original.Substring(0, 1) + newRank;
         }
 
         public static string getHorizontalSquare(string original, int num) // original --> original square, num --> number of squares (can be negative){
         {
             // only deals with file, so only change char part of string
-            char newFile = (char)(Char.ConvertToUtf32(original, 0) + num);
-            if (Char.IsLetter(newFile))
-                throw new FormatException("Cannot move that many squares!");
-            else
-                return (char)newFile + original.Substring(1);
+            char newFile = (char)(Char.ConvertToUtf32(original, 0) + num);           
+            return (char)newFile + original.Substring(1);
         }
 
         public static string getRDiagonalSquare(string original, int num) // original --> original square, num --> number of squares (can be negative){
@@ -41,10 +44,7 @@ namespace Chess.General
             // deal with both rank and file, combine two methods above
             int newRank = int.Parse(original.Substring(1)) + num;
             char newFile = (char)(Char.ConvertToUtf32(original, 0) + num);
-            if (newRank > 8 || newRank < 1 || Char.IsLetter(newFile))
-                throw new FormatException("Cannot move that many squares!");
-            else
-                return newFile + newRank.ToString();
+            return newFile + newRank.ToString();
         }
 
         public static string getLDiagonalSquare(string original, int num) // original --> original square, num --> number of squares (can be negative){
@@ -52,10 +52,7 @@ namespace Chess.General
             // deal with both rank and file, combine two methods above
             int newRank = int.Parse(original.Substring(1)) + num;
             char newFile = (char)(Char.ConvertToUtf32(original, 0) - num);
-            if (newRank > 8 || newRank < 1 || Char.IsLetter(newFile))
-                throw new FormatException("Cannot move that many squares!");
-            else
-                return newFile + newRank.ToString();
+            return newFile + newRank.ToString();
         }
 
         public static int[] CoordsToNums(string coords) // e.g. e4 --> [4, 3]
@@ -66,13 +63,9 @@ namespace Chess.General
             col = Char.ConvertToUtf32(coords, 0);
             col -= 97;
 
-            if (col > 7)
-            {
-                throw new FormatException("Invalid Coordinates!");
-            }
-
             if (!int.TryParse(coords.Substring(1), out row))
             {
+                System.Diagnostics.Debug.WriteLine("big bad coords:");
                 System.Diagnostics.Debug.WriteLine(coords);
                 throw new FormatException("Invalid Coordinates!");
             }
@@ -98,31 +91,55 @@ namespace Chess.General
             return false;
         }
 
-        public static string[] getValidMoves(char piece, char[,] boardState)
+        public static List<String> getValidMoves(Piece p, Board board)
         {
-            return null;
+            int side = Char.IsUpper(p.pieceCode) ? 0 : 1;
+            switch (p.pieceCode.ToString().ToLower())
+            {
+                case "p":
+                    return getPawnMoves(p.pos, board, side);
+                case "n":
+                    return getKnightMoves(p.pos, board, side);
+                case "b":
+                    return getBishopMoves(p.pos, board, side);
+                case "r":
+                    return getRookMoves(p.pos, board, side);
+                case "q":
+                    return getQueenMoves(p.pos, board, side);
+                case "k":
+                    return getKingMoves(p.pos, board, side);
+                default:
+                    throw new FormatException("Piece Code is incorrect");
+            }
         }
 
         // TO GET MOVES FROM A SQUARE
+        // side: 0 is white, 1 is black
         public static List<String> getPawnMoves(string pos, Board board, int side)
         {
             List<String> results = new List<String>();
             // check square ahead
             string ahead = getVerticalSquare(pos, side == 0 ? 1 : -1);
             if (!board.isFilled(ahead))
+            {
                 results.Add(ahead);
+            }
 
             // check if pawn is in original position, if so, can move two squares
-            if (pos.Substring(1).Equals(side == 0 ? 2 : 7))
-                results.Add(pos.Substring(0, 1) + (side == 0 ? 4 : 5));
+            if (pos.Substring(1).Equals(side == 0 ? "2" : "7"))
+            {
+                string twoahead = getVerticalSquare(pos, side == 0 ? 2 : -2);
+                if (!board.isFilled(twoahead))
+                    results.Add(twoahead);
+            }
 
             // check captures and en passant square
             string enPassant = board.enPassant;
             string diagR = getRDiagonalSquare(pos, side == 0 ? 1 : -1);
             string diagL = getLDiagonalSquare(pos, side == 0 ? 1 : -1);
-            if (board.isFilled(diagR) || diagR.Equals(enPassant))
+            if (!pos.Substring(0, 1).Equals("h") && (Char.IsLower(board.getSquare(diagR)) || diagR.Equals(enPassant)))
                 results.Add(diagR);
-            if (board.isFilled(diagL) || diagL.Equals(enPassant))
+            if (!pos.Substring(0, 1).Equals("a") && (Char.IsLower(board.getSquare(diagL)) || diagL.Equals(enPassant)))
                 results.Add(diagL);
 
             // implement promotion here?
@@ -142,25 +159,40 @@ namespace Chess.General
         {
             List<String> results = new List<String>();
             // hardcoded knight moves
-            results.Add(getVerticalSquare(getHorizontalSquare(pos, 2), -1));
-            results.Add(getVerticalSquare(getHorizontalSquare(pos, 2), 1));
 
-            results.Add(getHorizontalSquare(getVerticalSquare(pos, 2), 1));
-            results.Add(getHorizontalSquare(getVerticalSquare(pos, 2), -1));
-
-            results.Add(getVerticalSquare(getHorizontalSquare(pos, -2), 1));
-            results.Add(getVerticalSquare(getHorizontalSquare(pos, -2), -1));
-
-            results.Add(getHorizontalSquare(getVerticalSquare(pos, -2), 1));
-            results.Add(getHorizontalSquare(getVerticalSquare(pos, -2), 1));
-
+            // to the right by 2
+            string right_two = getHorizontalSquare(pos, 2);
+            results.Add(getVerticalSquare(right_two, -1));
+            results.Add(getVerticalSquare(right_two, 1));
+            
+            // up by 2
+            string up_two = getVerticalSquare(pos, 2);
+            results.Add(getHorizontalSquare(up_two, 1));
+            results.Add(getHorizontalSquare(up_two, -1));
+           
+            // to the left by 2
+            string left_two = getHorizontalSquare(pos, -2);
+            results.Add(getVerticalSquare(left_two, 1));
+            results.Add(getVerticalSquare(left_two, -1));
+            
+            // down by 2
+            string down_two = getVerticalSquare(pos, -2);
+            results.Add(getHorizontalSquare(down_two, -1));
+            results.Add(getHorizontalSquare(down_two, 1));
+            
             // if move makes king in check, it is illegal; also check for collisions
-            foreach (string move in results)
+            foreach (string move in new List<String>(results))
             {
-                Board potential = board.makeCopy();
-                potential.updateBoard('P', pos, move);
-                if (isKingInCheck(side, potential) || board.isFilled(move))
+                if (!validateSquare(move))
+                {
                     results.Remove(move);
+                    continue;
+                }
+                if (isKingInCheck(side, board) || board.isFilled(move))
+                {
+                    results.Remove(move);
+                    continue;
+                }
             }
             return results;
         }
@@ -173,79 +205,48 @@ namespace Chess.General
             // upwards
             while (true)
             {
-                try
-                {
-                    string up = getVerticalSquare(pos, i);
-                    if (board.isFilled(up))
-                    {
-                        i = -1;
-                        break;
-                    }
-                    results.Add(up);
-                }
-                catch (FormatException e)
+                string up = getVerticalSquare(pos, i);
+                if (board.isFilled(up) || up == null)
                 {
                     i = -1;
                     break;
                 }
+                results.Add(up);
                 i++;
             }
             // downwards
             while (true)
             {
-                try
-                {
-                    string down = getVerticalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        i = 1;
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getVerticalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     i = 1;
                     break;
                 }
+                results.Add(down);
                 i--;
             }
             // rightwards
             while (true)
             {
-                try
-                {
-                    string down = getHorizontalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        i = -1;
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getHorizontalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     i = -1;
                     break;
                 }
+                results.Add(down);
                 i++;
             }
             // leftwards
             while (true)
             {
-                try
-                {
-                    string down = getHorizontalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getHorizontalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     break;
                 }
+                results.Add(down);                
                 i--;
             }
 
@@ -269,79 +270,48 @@ namespace Chess.General
             // right-upwards
             while (true)
             {
-                try
-                {
-                    string up = getRDiagonalSquare(pos, i);
-                    if (board.isFilled(up))
-                    {
-                        i = -1;
-                        break;
-                    }
-                    results.Add(up);
-                }
-                catch (FormatException e)
+                string up = getRDiagonalSquare(pos, i);
+                if (board.isFilled(up) || up == null)
                 {
                     i = -1;
                     break;
                 }
+                results.Add(up);                
                 i++;
             }
             // left-downwards
             while (true)
             {
-                try
-                {
-                    string down = getRDiagonalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        i = 1;
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getRDiagonalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     i = 1;
                     break;
                 }
+                results.Add(down);
                 i--;
             }
             // left-upwards
             while (true)
             {
-                try
-                {
-                    string down = getLDiagonalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        i = -1;
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getLDiagonalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     i = -1;
                     break;
                 }
+                results.Add(down);                
                 i++;
             }
             // right-downwards
             while (true)
             {
-                try
-                {
-                    string down = getLDiagonalSquare(pos, i);
-                    if (board.isFilled(down))
-                    {
-                        break;
-                    }
-                    results.Add(down);
-                }
-                catch (FormatException e)
+                string down = getLDiagonalSquare(pos, i);
+                if (board.isFilled(down) || down == null)
                 {
                     break;
                 }
+                results.Add(down);                
                 i--;
             }
 
@@ -385,7 +355,7 @@ namespace Chess.General
             {
                 Board potential = board.makeCopy();
                 potential.updateBoard('p', pos, move);
-                if (isKingInCheck(side, potential))
+                if (move == null || isKingInCheck(side, potential) || board.isFilled(move))
                     results.Remove(move);
             }
 

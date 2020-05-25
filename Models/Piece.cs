@@ -27,6 +27,11 @@ namespace Chess.Models
 
         public Texture2D texture;
 
+        public Piece()
+        {
+            pos = "";
+        }
+
         public Piece(Texture2D tx, string coords, char code)
         {
             pos = coords;
