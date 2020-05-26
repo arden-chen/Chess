@@ -19,7 +19,7 @@ namespace Chess
 
         private int _WIDTH = 256;
         private int _HEIGHT = 128;
-        private int scale = 8;
+        private int scale = 8; // change in debug view too
 
         private List<BaseController> controllers = new List<BaseController>();
 
@@ -96,7 +96,11 @@ namespace Chess
             GraphicsDevice.SetRenderTarget(null);
 
             spriteBatch.Begin();
+
             spriteBatch.Draw(screen, new Rectangle(0, 0, _WIDTH * scale, _HEIGHT * scale), Color.White);
+            foreach (BaseController c in controllers)
+                c.Debug(gameTime);
+
             spriteBatch.End();
 
             base.Draw(gameTime);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chess.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 namespace Chess.General
 {
     // used to store all chess information
+    // also used to print out debug information
     class Board
     {
         public char[,] board;      
@@ -22,22 +24,29 @@ namespace Chess.General
         // keep track of turn and who made the last move
         // 0 = white
         // 1 = black
-        // starts 1 because updateBoard will change this to 0 immediately after white makes a move
-        private int turn = 1;
+        public int turn = 0;
 
         // total moves
         // increase by 1 every time white makes a move
-        private int turnCount = 0;
+        public int turnCount = 0;
+
+        // keep track of current selected piece; useful for debugging.
+        public Piece selected;
+
+        // keep track of selected pieces moves; useful for debugging.
+        public List<String> currentMoves;
 
         public Board(char[,] board)
         {
             this.board = board;
             lastMove = "";
             enPassant = "";
+            selected = new Piece();
+            currentMoves = new List<String>();
         }
 
         // used to make a deep copy
-        public Board(char[,] board, string lastMove, string enPassant, bool blackCastleKingside, bool blackCastleQueenside, bool whiteCastleKingside, bool whiteCastleQueenside, int turn, int turnCount)
+        public Board(char[,] board, string lastMove, string enPassant, bool blackCastleKingside, bool blackCastleQueenside, bool whiteCastleKingside, bool whiteCastleQueenside, int turn, int turnCount, Piece selected, List<String> currentMoves)
         {
             this.board = board;
             this.lastMove = lastMove;
@@ -48,6 +57,8 @@ namespace Chess.General
             this.whiteCastleQueenside = whiteCastleQueenside;
             this.turn = turn;
             this.turnCount = turnCount;
+            this.selected = selected;
+            this.currentMoves = currentMoves;
         }
 
         // called when a move is made
@@ -95,7 +106,9 @@ namespace Chess.General
                 whiteCastleKingside,
                 whiteCastleQueenside,
                 turn,
-                turnCount);
+                turnCount,
+                selected,
+                currentMoves);
         }
         public override string ToString()
         {

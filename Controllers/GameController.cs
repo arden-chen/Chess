@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Runtime.InteropServices;
 
 namespace Chess.Controllers
 {
@@ -31,6 +31,7 @@ namespace Chess.Controllers
         private SpriteBatch spriteBatch;
 
         private Dictionary<string, BaseView> views = new Dictionary<string, BaseView>();
+        private BaseView debug;
         private List<Piece> blackPieces = new List<Piece>();
         private List<Piece> whitePieces = new List<Piece>();
 
@@ -52,6 +53,7 @@ namespace Chess.Controllers
             // Add all views, in correct order
             views["board"] = (new BoardView(Content, spriteBatch, selected));
             views["pieces"] = (new PiecesView(Content, spriteBatch, blackPieces, whitePieces));
+            debug = (new DebugView(Content, spriteBatch, board));
             System.Diagnostics.Debug.WriteLine(board.ToString());
         }
 
@@ -73,6 +75,8 @@ namespace Chess.Controllers
                             if (clickedOnPiece(p, state))
                             {
                                 selected = p;
+                                board.selected = p;
+                                board.currentMoves = ChessFunctions.getValidMoves(selected, board);
                             }
                         }
                     }
@@ -85,21 +89,16 @@ namespace Chess.Controllers
                             {
                                 // System.Diagnostics.Debug.WriteLine(p.ToString());
                                 selected = p;
+                                board.selected = p;
+                                board.currentMoves = ChessFunctions.getValidMoves(selected, board);
                             }
                         }
                     }
                 }
                 // piece already selected, selected square must be a square the player tries to move piece to
                 else
-                {
-                    // get all the moves                    
-                    System.Diagnostics.Debug.WriteLine("moves");
-                    List<String> moves = ChessFunctions.getValidMoves(selected, board);
-                    foreach (string move in moves)
-                    {
-                        System.Diagnostics.Debug.WriteLine(move);
-                    }
-                    if (checkValidSquare(selected, square)) //checkValidSquare(selected, square)
+                {                    
+                    if (board.currentMoves.Contains(square)) //checkValidSquare(selected, square)
                     {
                         // move piece here
                         System.Diagnostics.Debug.WriteLine(square);
@@ -123,6 +122,11 @@ namespace Chess.Controllers
             {
                 view.Draw();
             }
+        }
+
+        public override void Debug(GameTime gameTime)
+        {
+            debug.Draw();
         }
 
         // get square that user is hovering on

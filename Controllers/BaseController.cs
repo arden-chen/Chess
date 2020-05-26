@@ -11,7 +11,7 @@ namespace Chess.Controllers
     {
         public abstract void Initialize();
         public abstract void Update(GameTime gameTime);
-
         public abstract void Draw(GameTime gameTime);
+        public abstract void Debug(GameTime gameTime);
     }
 }

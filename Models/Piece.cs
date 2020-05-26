@@ -23,6 +23,7 @@ namespace Chess.Models
         /// Bb - Bishop
         /// Qq - Queen
         /// Kk - King
+        /// 0 if empty; used for debugging
         public char pieceCode;
 
         public Texture2D texture;
@@ -30,6 +31,7 @@ namespace Chess.Models
         public Piece()
         {
             pos = "";
+            pieceCode = '0';
         }
 
         public Piece(Texture2D tx, string coords, char code)
@@ -44,7 +46,10 @@ namespace Chess.Models
 
         public override string ToString()
         {
-            return pieceCode.ToString() + ", at: " + pos + "; row: " + row + ", col: " + column;
+            if (pos.Equals("") || pieceCode.Equals('0'))
+                return "No piece";
+            else
+                return pieceCode.ToString() + ", at: " + pos + "; row: " + row + ", col: " + column;
         }
 
         public void move(string destination)

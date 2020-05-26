@@ -1,5 +1,6 @@
 ﻿using Chess.General;
 using Chess.Models;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -12,6 +13,10 @@ namespace Chess.Views
 {
     class DebugView : BaseView
     {
+        private int _WIDTH = 256;
+        private int _HEIGHT = 128;
+        private int scale = 8; // change based on the one in chessgame
+
         private SpriteFont font;
         private Board board;
         private SpriteBatch spriteBatch;
@@ -26,7 +31,26 @@ namespace Chess.Views
 
         public override void Draw()
         {
-            throw new NotImplementedException();
+            spriteBatch.DrawString(font, "Turn: " + (board.turn == 0 ? "white" : "black"), new Vector2(_WIDTH/2 * scale, 0), Color.White);
+            spriteBatch.DrawString(font, "Last Move: " + board.lastMove, new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale), Color.White);
+            spriteBatch.DrawString(font, "Selected Piece: " + board.selected.ToString(), new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale * 2), Color.White);
+            spriteBatch.DrawString(font, "Current Valid Moves: " + formatMoves(board.currentMoves), new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale * 3), Color.White);
+        }
+
+        // format moves list to print out
+        private string formatMoves(List<String> moves)
+        {
+            if (moves.Count == 0)
+                return "None";
+            else
+            {
+                string result = "";
+                foreach (var move in moves)
+                {
+                    result += move + " ";
+                }
+                return result;
+            }
         }
     }
 }
