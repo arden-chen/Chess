@@ -45,7 +45,9 @@ namespace Chess.General
             currentMoves = new List<String>();
         }
 
-        // used to make a deep copy
+        /// used to make a deep copy
+        /// Unneeded right now.
+        /*
         public Board(char[,] board, string lastMove, string enPassant, bool blackCastleKingside, bool blackCastleQueenside, bool whiteCastleKingside, bool whiteCastleQueenside, int turn, int turnCount, Piece selected, List<String> currentMoves)
         {
             this.board = board;
@@ -60,6 +62,7 @@ namespace Chess.General
             this.selected = selected;
             this.currentMoves = currentMoves;
         }
+        */
 
         // called when a move is made
         public void updateBoard(char piece, string original, string final)
@@ -75,7 +78,7 @@ namespace Chess.General
             board[finalPos[0],finalPos[1]] = piece;
             lastMove = Char.ToLower(piece) + original + " to " + final; // not exactly correct notation; used for data purposes
             // TODO make correct notation
-            System.Diagnostics.Debug.WriteLine(lastMove);
+            // System.Diagnostics.Debug.WriteLine(lastMove);
 
             // print new board
             updateData();
@@ -84,6 +87,7 @@ namespace Chess.General
         public bool isFilled(string square)
         {            
             int[] coords = ChessFunctions.CoordsToNums(square);
+            System.Diagnostics.Debug.WriteLine(square + ": " + coords[0] + "," + coords[1]);
             bool filled = !board[coords[0], coords[1]].Equals('-');
             // System.Diagnostics.Debug.WriteLine(square + " has: " + board[coords[0], coords[1]]);
             /*
@@ -95,6 +99,12 @@ namespace Chess.General
             return filled;
         }
 
+        /// <summary>
+        /// Make a deep copy of this board
+        /// Unneeded right now.
+        /// </summary>
+        /// <returns></returns>
+        /*
         public Board makeCopy()
         {
             return new Board(
@@ -110,6 +120,8 @@ namespace Chess.General
                 selected,
                 currentMoves);
         }
+        */
+
         public override string ToString()
         {
             string result = "";
@@ -175,10 +187,31 @@ namespace Chess.General
 
         }
         
+        /// <summary>
+        /// Get the code of the piece at the square.
+        /// </summary>
+        /// <param name="square">Square that is desired.</param>
+        /// <returns></returns>
         public char getSquare(string square)
         {
             int[] coords = ChessFunctions.CoordsToNums(square);
             return board[coords[0], coords[1]];
+        }
+
+        /// <summary>
+        /// Get the color of the piece at this square, if there is one.
+        /// </summary>
+        /// <param name="square">Square that is desired.</param>
+        /// <returns>Returns 0 if white, 1 if black, -1 if not applicable (no piece).</returns>
+        public int getSquareColor(string square)
+        {
+            char piece = getSquare(square);
+            if (Char.IsLower(piece))
+                return 1;
+            else if (Char.IsUpper(piece))
+                return 0;
+            else
+                return -1;
         }
     }
 }

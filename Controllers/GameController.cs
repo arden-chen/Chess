@@ -64,49 +64,48 @@ namespace Chess.Controllers
             // check if square is a real square; if it is "" then not a square selected
             if (!square.Equals("") && state.LeftButton == ButtonState.Pressed && prevState.LeftButton != ButtonState.Pressed && prevState != null)
             {
-                // if no piece selected
-                if (selected == null)
+                // if player clicking on their piece, they must be trying to select it
+                // if white's turn
+                if (turn == 0)
                 {
-                    // if white's turn
-                    if (turn == 0)
+                    foreach (Piece p in whitePieces)
                     {
-                        foreach (Piece p in whitePieces)
+                        if (clickedOnPiece(p, state))
                         {
-                            if (clickedOnPiece(p, state))
-                            {
-                                selected = p;
-                                board.selected = p;
-                                board.currentMoves = ChessFunctions.getValidMoves(selected, board);
-                            }
+                            selected = p;
+                            board.selected = p;
+                            board.currentMoves = ChessFunctions.getValidMoves(selected, board);
                         }
                     }
-                    // black's turn
-                    else if (turn == 1)
+                }
+                // black's turn
+                else if (turn == 1)
+                {
+                    foreach (Piece p in blackPieces)
                     {
-                        foreach (Piece p in blackPieces)
+                        if (clickedOnPiece(p, state))
                         {
-                            if (clickedOnPiece(p, state))
-                            {
-                                // System.Diagnostics.Debug.WriteLine(p.ToString());
-                                selected = p;
-                                board.selected = p;
-                                board.currentMoves = ChessFunctions.getValidMoves(selected, board);
-                            }
+                            // System.Diagnostics.Debug.WriteLine(p.ToString());
+                            selected = p;
+                            board.selected = p;
+                            board.currentMoves = ChessFunctions.getValidMoves(selected, board);
                         }
                     }
                 }
                 // piece already selected, selected square must be a square the player tries to move piece to
-                else
+                if (selected != null)
                 {                    
                     if (board.currentMoves.Contains(square)) //checkValidSquare(selected, square)
                     {
                         // move piece here
-                        System.Diagnostics.Debug.WriteLine(square);
+                        // System.Diagnostics.Debug.WriteLine(square);
                         board.updateBoard(selected.pieceCode, selected.pos, square);
                         selected.move(square);
                         selected = null;
                         turn ^= 1;
                         System.Diagnostics.Debug.WriteLine(board.ToString());
+                        board.selected = new Piece();
+                        board.currentMoves = new List<String>();
                     }
                 }
                 // here if square is ""

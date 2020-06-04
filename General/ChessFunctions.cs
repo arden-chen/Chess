@@ -17,8 +17,14 @@ namespace Chess.General
 {
     class ChessFunctions
     {
+        /// <summary>
+        /// Returns true if square is a valid square on the chessboard.
+        /// </summary>
+        /// <param name="square">Square to validate.</param>
+        /// <returns></returns>
         public static bool validateSquare(string square)
         {
+            System.Diagnostics.Debug.WriteLine("squre to validate: " + square);
             int col = Char.ConvertToUtf32(square.Substring(0, 1), 0);
             int row = Int32.Parse(square.Substring(1));
             return (col > 96 && col < 105 && row > 0 && row < 9);
@@ -123,14 +129,14 @@ namespace Chess.General
             if (!board.isFilled(ahead))
             {
                 results.Add(ahead);
-            }
 
-            // check if pawn is in original position, if so, can move two squares
-            if (pos.Substring(1).Equals(side == 0 ? "2" : "7"))
-            {
-                string twoahead = getVerticalSquare(pos, side == 0 ? 2 : -2);
-                if (!board.isFilled(twoahead))
-                    results.Add(twoahead);
+                // check if pawn is in original position, if so, can move two squares (only if moving one square is also possible)
+                if (pos.Substring(1).Equals(side == 0 ? "2" : "7"))
+                {
+                    string twoahead = getVerticalSquare(pos, side == 0 ? 2 : -2);
+                    if (!board.isFilled(twoahead))
+                        results.Add(twoahead);
+                }
             }
 
             // check captures and en passant square
@@ -145,12 +151,18 @@ namespace Chess.General
             // implement promotion here?
 
             // if move makes king in check, it is illegal
-            foreach (string move in results)
+            foreach (string move in new List<String>(results))
             {
-                Board potential = board.makeCopy();
-                potential.updateBoard('P', pos, move);
-                if (isKingInCheck(side, potential))
+                if (!validateSquare(move))
+                {
                     results.Remove(move);
+                    continue;
+                }
+                if (isKingInCheck(side, board))
+                {
+                    results.Remove(move);
+                    continue;
+                }
             }
             return results;
         }
@@ -251,12 +263,18 @@ namespace Chess.General
             }
 
             // if move makes king in check, it is illegal
-            foreach (string move in results)
+            foreach (string move in new List<String>(results))
             {
-                Board potential = board.makeCopy();
-                potential.updateBoard('p', pos, move);
-                if (isKingInCheck(side, potential))
+                if (!validateSquare(move))
+                {
                     results.Remove(move);
+                    continue;
+                }
+                if (isKingInCheck(side, board) || board.isFilled(move))
+                {
+                    results.Remove(move);
+                    continue;
+                }
             }
 
             return results;
@@ -271,21 +289,42 @@ namespace Chess.General
             while (true)
             {
                 string up = getRDiagonalSquare(pos, i);
-                if (board.isFilled(up) || up == null)
+                if (!validateSquare(up))
                 {
+                    System.Diagnostics.Debug.WriteLine(up);
                     i = -1;
                     break;
                 }
-                results.Add(up);                
+
+                if (board.isFilled(up))
+                {
+                    if (board.getSquareColor(up) != side)
+                    {
+                        results.Add(up);
+                    }
+                    i = -1;
+                    break;
+                }
+                results.Add(up);
                 i++;
             }
             // left-downwards
             while (true)
             {
                 string down = getRDiagonalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                if (!validateSquare(down))
                 {
                     i = 1;
+                    break;
+                }
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
+                    i = -1;
                     break;
                 }
                 results.Add(down);
@@ -295,8 +334,18 @@ namespace Chess.General
             while (true)
             {
                 string down = getLDiagonalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                if (!validateSquare(down))
                 {
+                    i = -1;
+                    break;
+                }
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
                     i = -1;
                     break;
                 }
@@ -307,8 +356,18 @@ namespace Chess.General
             while (true)
             {
                 string down = getLDiagonalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                if (!validateSquare(down))
                 {
+                    break;
+                }
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
+                    i = -1;
                     break;
                 }
                 results.Add(down);                
@@ -316,12 +375,14 @@ namespace Chess.General
             }
 
             // if move makes king in check, it is illegal
-            foreach (string move in results)
+            foreach (string move in new List<String>(results))
             {
-                Board potential = board.makeCopy();
-                potential.updateBoard('p', pos, move);
-                if (isKingInCheck(side, potential))
+                if (isKingInCheck(side, board))
+                {
+                    System.Diagnostics.Debug.WriteLine("move is filled: " + move);
                     results.Remove(move);
+                    continue;
+                }
             }
 
             return results;
@@ -351,12 +412,18 @@ namespace Chess.General
             results.Add(getLDiagonalSquare(pos, -1));
 
             // if move makes king in check, it is illegal
-            foreach (string move in results)
+            foreach (string move in new List<String>(results))
             {
-                Board potential = board.makeCopy();
-                potential.updateBoard('p', pos, move);
-                if (move == null || isKingInCheck(side, potential) || board.isFilled(move))
+                if (!validateSquare(move))
+                {
                     results.Remove(move);
+                    continue;
+                }
+                if (isKingInCheck(side, board) || board.isFilled(move))
+                {
+                    results.Remove(move);
+                    continue;
+                }
             }
 
             return results;
