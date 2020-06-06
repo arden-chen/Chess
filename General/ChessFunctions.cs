@@ -214,48 +214,89 @@ namespace Chess.General
             List<string> results = new List<String>();
             // check vertical moves
             int i = 1; // counter for moves
-            // upwards
+            // right
             while (true)
             {
-                string up = getVerticalSquare(pos, i);
-                if (board.isFilled(up) || up == null)
+                string up = getHorizontalSquare(pos, i);
+                if (!validateSquare(up))
                 {
+                    System.Diagnostics.Debug.WriteLine(up);
+                    i = -1;
+                    break;
+                }
+
+                if (board.isFilled(up))
+                {
+                    if (board.getSquareColor(up) != side)
+                    {
+                        results.Add(up);
+                    }
                     i = -1;
                     break;
                 }
                 results.Add(up);
                 i++;
             }
-            // downwards
+            // left
             while (true)
             {
-                string down = getVerticalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                string down = getHorizontalSquare(pos, i);
+                if (!validateSquare(down))
                 {
                     i = 1;
+                    break;
+                }
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
+                    i = -1;
                     break;
                 }
                 results.Add(down);
                 i--;
             }
-            // rightwards
+            // up
             while (true)
             {
-                string down = getHorizontalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                string down = getVerticalSquare(pos, i);
+                if (!validateSquare(down))
                 {
                     i = -1;
                     break;
                 }
-                results.Add(down);
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
+                    i = -1;
+                    break;
+                }
+                results.Add(down);                
                 i++;
             }
-            // leftwards
+            // right-downwards
             while (true)
             {
-                string down = getHorizontalSquare(pos, i);
-                if (board.isFilled(down) || down == null)
+                string down = getVerticalSquare(pos, i);
+                if (!validateSquare(down))
                 {
+                    break;
+                }
+
+                if (board.isFilled(down))
+                {
+                    if (board.getSquareColor(down) != side)
+                    {
+                        results.Add(down);
+                    }
+                    i = -1;
                     break;
                 }
                 results.Add(down);                
@@ -265,13 +306,9 @@ namespace Chess.General
             // if move makes king in check, it is illegal
             foreach (string move in new List<String>(results))
             {
-                if (!validateSquare(move))
+                if (isKingInCheck(side, board))
                 {
-                    results.Remove(move);
-                    continue;
-                }
-                if (isKingInCheck(side, board) || board.isFilled(move))
-                {
+                    System.Diagnostics.Debug.WriteLine("move is filled: " + move);
                     results.Remove(move);
                     continue;
                 }
