@@ -98,7 +98,45 @@ namespace Chess.Controllers
                     if (board.currentMoves.Contains(square)) //checkValidSquare(selected, square)
                     {
                         // move piece here
-                        // System.Diagnostics.Debug.WriteLine(square);
+                        // System.Diagnostics.Debug.WriteLine(square)
+                        // check if captures
+                        if (board.isFilled(square) && board.getSquareColor(selected.pos) != board.getSquareColor(square))
+                        {
+                            System.Diagnostics.Debug.WriteLine("Piece that just made a capture: " + selected.ToString());
+                            // delete piece that is already there
+                            if (board.getSquareColor(selected.pos) == 0)
+                            {
+                                // current piece is white, so check black pieces to remove
+                                System.Diagnostics.Debug.WriteLine("Piece that just made a capture: " + selected.ToString());
+                                foreach (var piece in blackPieces)
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Comparing: " + square + " and: " + piece.pos);
+                                    if (piece.pos.Equals(square))
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("captured: " + piece.ToString());
+                                        blackPieces.Remove(piece);
+                                        break;
+                                    }
+                                }
+                            }
+                            else if (board.getSquareColor(selected.pos) == 1)
+                            {
+                                // current piece is black, so checck white pieces to remove
+                                System.Diagnostics.Debug.WriteLine("Piece that just made a capture: " + selected.ToString());
+                                foreach (var piece in whitePieces)
+                                {
+                                    if (piece.pos.Equals(square))
+                                    {
+                                        whitePieces.Remove(piece);
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // error: no piece???
+                            }
+                        }
                         board.updateBoard(selected.pieceCode, selected.pos, square);
                         selected.move(square);
                         selected = null;

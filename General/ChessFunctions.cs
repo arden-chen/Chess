@@ -24,7 +24,7 @@ namespace Chess.General
         /// <returns></returns>
         public static bool validateSquare(string square)
         {
-            System.Diagnostics.Debug.WriteLine("squre to validate: " + square);
+            // System.Diagnostics.Debug.WriteLine("square to validate: " + square);
             int col = Char.ConvertToUtf32(square.Substring(0, 1), 0);
             int row = Int32.Parse(square.Substring(1));
             return (col > 96 && col < 105 && row > 0 && row < 9);
@@ -126,6 +126,8 @@ namespace Chess.General
             List<String> results = new List<String>();
             // check square ahead
             string ahead = getVerticalSquare(pos, side == 0 ? 1 : -1);
+            if (side == 1)
+                System.Diagnostics.Debug.WriteLine("Ahead square: " + ahead);
             if (!board.isFilled(ahead))
             {
                 results.Add(ahead);
