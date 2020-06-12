@@ -145,9 +145,11 @@ namespace Chess.General
             string enPassant = board.enPassant;
             string diagR = getRDiagonalSquare(pos, side == 0 ? 1 : -1);
             string diagL = getLDiagonalSquare(pos, side == 0 ? 1 : -1);
-            if (!pos.Substring(0, 1).Equals("h") && (Char.IsLower(board.getSquare(diagR)) || diagR.Equals(enPassant)))
+            if (side == 1)
+                System.Diagnostics.Debug.WriteLine("Pawn diagonal checks: " + diagR + " " + diagL);
+            if (!pos.Substring(0, 1).Equals("h") && (side == 0 && Char.IsLower(board.getSquare(diagR)) || (side == 1 && Char.IsUpper(board.getSquare(diagR)) || diagR.Equals(enPassant))))
                 results.Add(diagR);
-            if (!pos.Substring(0, 1).Equals("a") && (Char.IsLower(board.getSquare(diagL)) || diagL.Equals(enPassant)))
+            if (!pos.Substring(0, 1).Equals("a") && (side == 0 && Char.IsLower(board.getSquare(diagL)) || (side == 1 && Char.IsUpper(board.getSquare(diagL)) || diagL.Equals(enPassant))))
                 results.Add(diagL);
 
             // implement promotion here?
@@ -310,7 +312,6 @@ namespace Chess.General
             {
                 if (isKingInCheck(side, board))
                 {
-                    System.Diagnostics.Debug.WriteLine("move is filled: " + move);
                     results.Remove(move);
                     continue;
                 }
@@ -363,7 +364,7 @@ namespace Chess.General
                     {
                         results.Add(down);
                     }
-                    i = -1;
+                    i = 1;
                     break;
                 }
                 results.Add(down);
@@ -372,23 +373,23 @@ namespace Chess.General
             // left-upwards
             while (true)
             {
-                string down = getLDiagonalSquare(pos, i);
-                if (!validateSquare(down))
+                string up = getLDiagonalSquare(pos, i);
+                if (!validateSquare(up))
                 {
                     i = -1;
                     break;
                 }
 
-                if (board.isFilled(down))
+                if (board.isFilled(up))
                 {
-                    if (board.getSquareColor(down) != side)
+                    if (board.getSquareColor(up) != side)
                     {
-                        results.Add(down);
+                        results.Add(up);
                     }
                     i = -1;
                     break;
                 }
-                results.Add(down);                
+                results.Add(up);                
                 i++;
             }
             // right-downwards
@@ -406,7 +407,6 @@ namespace Chess.General
                     {
                         results.Add(down);
                     }
-                    i = -1;
                     break;
                 }
                 results.Add(down);                
@@ -418,7 +418,6 @@ namespace Chess.General
             {
                 if (isKingInCheck(side, board))
                 {
-                    System.Diagnostics.Debug.WriteLine("move is filled: " + move);
                     results.Remove(move);
                     continue;
                 }
@@ -458,7 +457,8 @@ namespace Chess.General
                     results.Remove(move);
                     continue;
                 }
-                if (isKingInCheck(side, board) || board.isFilled(move))
+                bool oppCase = side == 0 ? Char.IsLower(board.getSquare(move)) : Char.IsUpper(board.getSquare(move));
+                if (isKingInCheck(side, board) || (board.isFilled(move) && !oppCase))
                 {
                     results.Remove(move);
                     continue;
