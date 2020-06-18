@@ -126,8 +126,6 @@ namespace Chess.General
             List<String> results = new List<String>();
             // check square ahead
             string ahead = getVerticalSquare(pos, side == 0 ? 1 : -1);
-            if (side == 1)
-                System.Diagnostics.Debug.WriteLine("Ahead square: " + ahead);
             if (!board.isFilled(ahead))
             {
                 results.Add(ahead);
@@ -145,13 +143,23 @@ namespace Chess.General
             string enPassant = board.enPassant;
             string diagR = getRDiagonalSquare(pos, side == 0 ? 1 : -1);
             string diagL = getLDiagonalSquare(pos, side == 0 ? 1 : -1);
-            if (side == 1)
-                System.Diagnostics.Debug.WriteLine("Pawn diagonal checks: " + diagR + " " + diagL);
-            if (!pos.Substring(0, 1).Equals("h") && (side == 0 && Char.IsLower(board.getSquare(diagR)) || (side == 1 && Char.IsUpper(board.getSquare(diagR)) || diagR.Equals(enPassant))))
-                results.Add(diagR);
-            if (!pos.Substring(0, 1).Equals("a") && (side == 0 && Char.IsLower(board.getSquare(diagL)) || (side == 1 && Char.IsUpper(board.getSquare(diagL)) || diagL.Equals(enPassant))))
-                results.Add(diagL);
-
+            if (side == 0)
+            {
+                // white
+                if (!pos.Substring(0, 1).Equals("h") && Char.IsLower(board.getSquare(diagR)) || diagR.Equals(enPassant))
+                    results.Add(diagR);
+                if (!pos.Substring(0, 1).Equals("a") && Char.IsLower(board.getSquare(diagL)) || diagL.Equals(enPassant))
+                    results.Add(diagL);
+            }
+            else
+            {
+                // black
+                if (!pos.Substring(0, 1).Equals("a") && Char.IsUpper(board.getSquare(diagR)) || diagR.Equals(enPassant))
+                    results.Add(diagR);
+                if (!pos.Substring(0, 1).Equals("h") && Char.IsUpper(board.getSquare(diagL)) || diagL.Equals(enPassant))
+                    results.Add(diagL);
+            }
+            
             // implement promotion here?
 
             // if move makes king in check, it is illegal
@@ -224,7 +232,6 @@ namespace Chess.General
                 string up = getHorizontalSquare(pos, i);
                 if (!validateSquare(up))
                 {
-                    System.Diagnostics.Debug.WriteLine(up);
                     i = -1;
                     break;
                 }
@@ -331,7 +338,6 @@ namespace Chess.General
                 string up = getRDiagonalSquare(pos, i);
                 if (!validateSquare(up))
                 {
-                    System.Diagnostics.Debug.WriteLine(up);
                     i = -1;
                     break;
                 }

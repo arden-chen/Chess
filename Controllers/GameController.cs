@@ -142,6 +142,7 @@ namespace Chess.Controllers
                         selected = null;
                         turn ^= 1;
                         System.Diagnostics.Debug.WriteLine(board.ToString());
+                        System.Diagnostics.Debug.WriteLine(board.inCheck(turn));
                         board.selected = new Piece();
                         board.currentMoves = new List<String>();
                     }
@@ -196,6 +197,7 @@ namespace Chess.Controllers
 
         private void loadBoard()
         {
+            /*
             boardState = new char[8,8] { {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}, 
                                          {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'}, 
                                          {'-', '-', '-', '-', '-', '-', '-', '-'},
@@ -204,7 +206,8 @@ namespace Chess.Controllers
                                          {'-', '-', '-', '-', '-', '-', '-', '-'},
                                          {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'}, 
                                          {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'} };
-            board = new Board(boardState);
+            */
+            board = new Board(whitePieces,blackPieces);
         }
 
         private void loadPieces()

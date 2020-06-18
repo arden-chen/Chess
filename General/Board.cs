@@ -11,7 +11,11 @@ namespace Chess.General
     // also used to print out debug information
     class Board
     {
-        public char[,] board;      
+        public char[,] board;
+        public char[,] testboard; // test moves, updated to be the same as board after every move
+
+        public List<Piece> blackPieces;
+        public List<Piece> whitePieces;
 
         public string lastMove;
         public string enPassant;
@@ -36,6 +40,35 @@ namespace Chess.General
         // keep track of selected pieces moves; useful for debugging.
         public List<String> currentMoves;
 
+        public Board(List<Piece> whitePieces, List<Piece> blackPieces)
+        {
+            this.board = new char[8, 8];
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    board[i, j] = '-';
+                }
+            }
+
+            this.blackPieces = blackPieces;
+            this.whitePieces = whitePieces;
+            foreach (Piece p in blackPieces)
+            {
+                int[] pos = ChessFunctions.CoordsToNums(p.pos);
+                this.board[pos[0], pos[1]] = p.pieceCode;
+            }
+            foreach (Piece p in whitePieces)
+            {
+                int[] pos = ChessFunctions.CoordsToNums(p.pos);
+                this.board[pos[0], pos[1]] = p.pieceCode;
+            }
+            lastMove = "";
+            enPassant = "";
+            selected = new Piece();
+            currentMoves = new List<String>();
+        }
+
         public Board(char[,] board)
         {
             this.board = board;
@@ -46,8 +79,6 @@ namespace Chess.General
         }
 
         /// used to make a deep copy
-        /// Unneeded right now.
-        /*
         public Board(char[,] board, string lastMove, string enPassant, bool blackCastleKingside, bool blackCastleQueenside, bool whiteCastleKingside, bool whiteCastleQueenside, int turn, int turnCount, Piece selected, List<String> currentMoves)
         {
             this.board = board;
@@ -62,7 +93,6 @@ namespace Chess.General
             this.selected = selected;
             this.currentMoves = currentMoves;
         }
-        */
 
         // called when a move is made
         public void updateBoard(char piece, string original, string final)
@@ -82,12 +112,14 @@ namespace Chess.General
 
             // print new board
             updateData();
+            // update test board
+            testboard = board;
         }
 
         public bool isFilled(string square)
         {            
             int[] coords = ChessFunctions.CoordsToNums(square);
-            System.Diagnostics.Debug.WriteLine(square + ": " + coords[0] + "," + coords[1]);
+            // System.Diagnostics.Debug.WriteLine(square + ": " + coords[0] + "," + coords[1]);
             bool filled = !board[coords[0], coords[1]].Equals('-');
             // System.Diagnostics.Debug.WriteLine(square + " has: " + board[coords[0], coords[1]]);
             /*
@@ -101,10 +133,8 @@ namespace Chess.General
 
         /// <summary>
         /// Make a deep copy of this board
-        /// Unneeded right now.
         /// </summary>
         /// <returns></returns>
-        /*
         public Board makeCopy()
         {
             return new Board(
@@ -120,7 +150,6 @@ namespace Chess.General
                 selected,
                 currentMoves);
         }
-        */
 
         public override string ToString()
         {
@@ -212,6 +241,95 @@ namespace Chess.General
                 return 0;
             else
                 return -1;
+        }
+
+        /// <summary>
+        /// Returns the square that the king is on (given a side)
+        /// </summary>
+        /// <param name="side"></param>
+        /// <returns></returns>
+        public string getKingSquare(int side)
+        {
+            System.Diagnostics.Debug.WriteLine("side: " + side);
+            if (side == 0)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if (board[i,j].Equals('K'))
+                            return ChessFunctions.NumsToCoords(new int[] { j, i });
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        if (board[i, j].Equals('k'))
+                            return ChessFunctions.NumsToCoords(new int[] { j, i });
+                    }
+                }
+            }
+            // something REALLY BAD happened
+            return null;
+        }
+
+        /// <summary>
+        /// Test if side is in check.
+        /// 0 --> white
+        /// 1 --> black 
+        /// </summary>
+        /// <param name="side"></param>
+        /// <returns></returns>
+        public bool inCheck(int side)
+        {
+            // list of all squares that opposing side's pieces attack
+            List<String> moves = new List<string>();
+            // get king's square
+            string king = getKingSquare(side);
+            if (side == 0)
+            {
+                // white
+                foreach (Piece p in blackPieces)
+                {
+                    moves.AddRange(ChessFunctions.getValidMoves(p, this));
+                }
+            }
+            else
+            {
+                // black
+                foreach (Piece p in whitePieces)
+                {
+                    moves.AddRange(ChessFunctions.getValidMoves(p, this));
+                }
+            }
+            System.Diagnostics.Debug.Write("moves: ");
+            foreach (string move in moves)
+                System.Diagnostics.Debug.Write(move + " ");
+            System.Diagnostics.Debug.Write("\n king: " + king);
+            return moves.Contains(king);
+        }
+
+        /// <summary>
+        /// Given a move, see if the move puts its own king in check.
+        /// </summary>
+        /// <param name="piece">Code for piece in question.</param>
+        /// <param name="original">Position of the piece originally.</param>
+        /// <param name="final">Position where the piece seeks to go.</param>
+        /// <returns>If move is invalid, returns false. If valid, true.</returns>
+        public bool checkValidate(char piece, string original, string final)
+        {
+            // make a copy of the board, to test this move
+            Board newBoard = new Board(this.board);
+            newBoard.updateBoard(piece, original, final);
+            System.Diagnostics.Debug.WriteLine("this board:");
+            System.Diagnostics.Debug.WriteLine(this.ToString());
+            System.Diagnostics.Debug.WriteLine("test board:");
+            System.Diagnostics.Debug.WriteLine(newBoard.ToString());
+            return true;
         }
     }
 }
