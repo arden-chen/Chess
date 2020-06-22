@@ -147,8 +147,7 @@ namespace Chess.Controllers
                         turn ^= 1;
                         System.Diagnostics.Debug.WriteLine(board.ToString());
                         System.Diagnostics.Debug.WriteLine(board.inCheck(turn));
-                        board.selected = new Piece();
-                        board.currentMoves = new List<String>();
+                        board.turnBegin();
                     }
                 }
                 // here if square is ""

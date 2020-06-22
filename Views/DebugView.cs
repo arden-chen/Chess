@@ -35,6 +35,10 @@ namespace Chess.Views
             spriteBatch.DrawString(font, "Last Move: " + board.lastMove, new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale), Color.White);
             spriteBatch.DrawString(font, "Selected Piece: " + board.selected.ToString(), new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale * 2), Color.White);
             spriteBatch.DrawString(font, "Current Valid Moves: " + formatMoves(board.currentMoves), new Vector2(_WIDTH / 2 * scale, _HEIGHT / 10 * scale * 3), Color.White);
+            if (board.win == 1)
+                spriteBatch.DrawString(font, "White wins!", new Vector2(_WIDTH / 2 * scale, _HEIGHT / 2 * scale), Color.White);
+            else if (board.win == 2)
+                spriteBatch.DrawString(font, "Black wins!", new Vector2(_WIDTH / 2 * scale, _HEIGHT / 2 * scale), Color.White);
         }
 
         // format moves list to print out

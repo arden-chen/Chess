@@ -66,8 +66,16 @@ namespace Chess.General
             int row;
             int col;
 
-            col = Char.ConvertToUtf32(coords, 0);
-            col -= 97;
+            try
+            {
+                col = Char.ConvertToUtf32(coords, 0);
+                col -= 97;
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Failed coords: " + coords + "!");
+                throw;
+            }
 
             if (!int.TryParse(coords.Substring(1), out row))
             {

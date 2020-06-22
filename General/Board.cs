@@ -6,19 +6,24 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chess.General
-{
-    // used to store all chess information
-    // also used to print out debug information
+{ 
     class Board
     {
         public char[,] board;
-        public char[,] testboard; // test moves, updated to be the same as board after every move
 
         public List<Piece> blackPieces;
         public List<Piece> whitePieces;
 
         public string lastMove;
         public string enPassant;
+
+        /// <summary>
+        /// Keep track if a side has won.
+        /// 0 --> no winner
+        /// 1 --> white wins
+        /// 2 --> black wins
+        /// </summary>
+        public int win = 0;
 
         public bool blackCastleKingside = true;
         public bool blackCastleQueenside = true;
@@ -92,6 +97,62 @@ namespace Chess.General
             return new Board(whitePieces, blackPieces, testBoard);
         }
 
+        // called at start of a turn. In this case, it is right after a player makes a move, since update is called every frame
+        public void turnBegin()
+        {
+            selected = new Piece();
+            currentMoves = new List<String>();
+            // check for checkmate
+            List<String> moves = new List<String>();
+            // TODO: This is very inefficient, since we are doing this loop multiple times, so we can maybe just do it once?
+            // also using current moves because of validateMoves function, seems verrrrrrrry janky
+
+            // whoever turn it is, check if they just lost
+            if (turn == 0)
+            {
+                // white
+                foreach (Piece p in whitePieces)
+                {
+                    List<String> newmoves = (ChessFunctions.getValidMoves(p, this));
+                    foreach (string move in newmoves.ToList())
+                    {
+                        if (checkValidate(p.pieceCode, p.pos, move, turn))
+                        {
+                            moves.Add(move);
+                        }
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine("move count: " + moves.Count);
+                if (moves.Count == 0)
+                {
+                    // white has no moves, black wins
+                    win = 2;
+                }
+            }
+            else
+            {
+                // black
+                foreach (Piece p in blackPieces)
+                {
+                    List<String> newmoves = (ChessFunctions.getValidMoves(p, this));
+                    foreach (string move in newmoves.ToList())
+                    {
+                        if (checkValidate(p.pieceCode, p.pos, move, turn))
+                        {
+                            moves.Add(move);
+                        }
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine("move count: " + moves.Count);
+                if (moves.Count == 0)
+                {
+                    // black has no moves, white wins
+                    win = 1;
+                }
+            }
+            currentMoves = new List<String>();
+        }
+
         // called when a move is made
         public void updateBoard(char piece, string original, string final)
         {
@@ -99,19 +160,71 @@ namespace Chess.General
             if (turn == 0)
                 turnCount++;
 
+            // TODO make correct notation
+            lastMove = Char.ToLower(piece) + original + " to " + final; // not exactly correct notation; used for data purposes
+            // System.Diagnostics.Debug.WriteLine("Last move: " + lastMove);
+
             int[] initPos = ChessFunctions.CoordsToNums(original);
             int[] finalPos = ChessFunctions.CoordsToNums(final);
 
             board[initPos[0],initPos[1]] = '-';
             board[finalPos[0],finalPos[1]] = piece;
-            lastMove = Char.ToLower(piece) + original + " to " + final; // not exactly correct notation; used for data purposes
-            // TODO make correct notation
-            // System.Diagnostics.Debug.WriteLine(lastMove);
 
             // print new board
             updateData();
-            // update test board
-            testboard = board;
+        }
+
+        private void updateData()
+        {
+            // get last move details
+            string lastPiece = lastMove.Substring(0, 1);
+
+            switch (lastPiece)
+            {
+                case "p": // check en passant
+                    if (lastMove.Substring(2, 1).Equals("2") && lastMove.Substring(8, 1).Equals("4"))
+                    {
+                        // white's last move was double pawn move; viable en passsant square behind it
+                        enPassant = lastMove.Substring(1, 1) + "3";
+                    }
+                    else if (lastMove.Substring(2, 1).Equals("7") && lastMove.Substring(8, 1).Equals("5"))
+                    {
+                        // black's last move was double pawn move; viable en passsant square behind it
+                        enPassant = lastMove.Substring(1, 1) + "6";
+                    }
+                    else
+                    {
+                        enPassant = "";
+                    }
+                    // check promotion
+                    if (lastMove.Substring(8, 1).Equals("8"))
+                    {
+                        // white is promoting a pawn
+                    }
+                    else if (lastMove.Substring(8, 1).Equals("1"))
+                    {
+                        // black is promoting a pawn
+                    }
+                    break;
+                case "k": // check castle rights
+                    if (turn == 0)
+                    {
+                        whiteCastleKingside = false;
+                        whiteCastleQueenside = false;
+                    }
+                    else
+                    {
+                        blackCastleKingside = false;
+                        blackCastleQueenside = false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            // TODO: check if king is in check
+            // use board visualization to check
+
         }
 
         public bool isFilled(string square)
@@ -141,57 +254,6 @@ namespace Chess.General
                 result += "\n";
             }
             return result;
-        }
-
-        private void updateData()
-        {
-            // get last move details
-            string lastPiece = lastMove.Substring(0, 1);
-
-            switch (lastPiece)
-            {
-                case "p": // check en passant
-                    if (lastMove.Substring(2, 1).Equals("2") && lastMove.Substring(8, 1).Equals("4"))
-                    {
-                        // white's last move was double pawn move; viable en passsant square behind it
-                        enPassant = lastMove.Substring(1, 1) + "3";
-                    }
-                    else if (lastMove.Substring(2, 1).Equals("7") && lastMove.Substring(8, 1).Equals("5"))
-                    {
-                        // black's last move was double pawn move; viable en passsant square behind it
-                        enPassant = lastMove.Substring(1, 1) + "6";
-                    }
-                    else
-                    {
-                        enPassant = "";
-                    }
-                    // check promotion
-                    if (lastMove.Substring(8, 1).Equals("8"))
-                    {
-                        // white is promoting a pawn
-                    } else if (lastMove.Substring(8, 1).Equals("1"))
-                    {
-                        // black is promoting a pawn
-                    }
-                    break;
-                case "k": // check castle rights
-                    if (turn == 0)
-                    {
-                        whiteCastleKingside = false;
-                        whiteCastleQueenside = false;
-                    } else
-                    {
-                        blackCastleKingside = false;
-                        blackCastleQueenside = false;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            
-            // TODO: check if king is in check
-            // use board visualization to check
-
         }
         
         /// <summary>
@@ -283,10 +345,12 @@ namespace Chess.General
                     moves.AddRange(ChessFunctions.getValidMoves(p, this));
                 }
             }
+            /*
             System.Diagnostics.Debug.Write("moves: ");
             foreach (string move in moves)
                 System.Diagnostics.Debug.Write(move + " ");
             System.Diagnostics.Debug.WriteLine("\n king: " + king);
+            */
             return moves.Contains(king);
         }
 
@@ -300,6 +364,7 @@ namespace Chess.General
         public bool checkValidate(char piece, string original, string final, int side)
         {
             // make a copy of the board, to test this move
+            // System.Diagnostics.Debug.WriteLine("Check Validate info:\nPiece: " + piece + " from " + original + " to " + final);
             Board newBoard = this.deepCopy();
             newBoard.updateBoard(piece, original, final);
             return !newBoard.inCheck(side);
@@ -309,15 +374,15 @@ namespace Chess.General
         {
             foreach (string move in currentMoves.ToList())
             {
-                System.Diagnostics.Debug.WriteLine("Validating move: " + move);
+                // System.Diagnostics.Debug.WriteLine("Validating move: " + move);
                 if (!checkValidate(selected.pieceCode, selected.pos, move, Char.IsUpper(selected.pieceCode) ? 0 : 1))
                 {
-                    System.Diagnostics.Debug.WriteLine(move + " is invalid.");
+                    // System.Diagnostics.Debug.WriteLine(move + " is invalid.");
                     currentMoves.Remove(move);
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine(move + " is valid.");
+                    // System.Diagnostics.Debug.WriteLine(move + " is valid.");
                 }
             }
         }
