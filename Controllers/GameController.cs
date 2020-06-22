@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Chess.Controllers
 {
@@ -24,7 +25,6 @@ namespace Chess.Controllers
         /// </summary>
         public int turn;
         public Piece selected = null;
-        public char[,] boardState;
 
         private Board board;
         private ContentManager Content;
@@ -75,6 +75,8 @@ namespace Chess.Controllers
                             selected = p;
                             board.selected = p;
                             board.currentMoves = ChessFunctions.getValidMoves(selected, board);
+                            board.validateMoves();
+                            break;
                         }
                     }
                 }
@@ -89,6 +91,8 @@ namespace Chess.Controllers
                             selected = p;
                             board.selected = p;
                             board.currentMoves = ChessFunctions.getValidMoves(selected, board);
+                            board.validateMoves();
+                            break;
                         }
                     }
                 }

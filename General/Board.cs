@@ -79,19 +79,17 @@ namespace Chess.General
         }
 
         /// used to make a deep copy
-        public Board(char[,] board, string lastMove, string enPassant, bool blackCastleKingside, bool blackCastleQueenside, bool whiteCastleKingside, bool whiteCastleQueenside, int turn, int turnCount, Piece selected, List<String> currentMoves)
+        public Board(List<Piece> whitePieces, List<Piece> blackPieces, char[,] board)
         {
             this.board = board;
-            this.lastMove = lastMove;
-            this.enPassant = enPassant;
-            this.blackCastleKingside = blackCastleKingside;
-            this.blackCastleQueenside = blackCastleQueenside;
-            this.whiteCastleKingside = whiteCastleKingside;
-            this.whiteCastleQueenside = whiteCastleQueenside;
-            this.turn = turn;
-            this.turnCount = turnCount;
-            this.selected = selected;
-            this.currentMoves = currentMoves;
+            this.blackPieces = blackPieces;
+            this.whitePieces = whitePieces;
+        }
+
+        public Board deepCopy()
+        {
+            char[,] testBoard = this.board.Clone() as char[,];
+            return new Board(whitePieces, blackPieces, testBoard);
         }
 
         // called when a move is made
@@ -129,26 +127,6 @@ namespace Chess.General
                 System.Diagnostics.Debug.WriteLine(square + " is empty");
                 */
             return filled;
-        }
-
-        /// <summary>
-        /// Make a deep copy of this board
-        /// </summary>
-        /// <returns></returns>
-        public Board makeCopy()
-        {
-            return new Board(
-                board,
-                lastMove,
-                enPassant,
-                blackCastleKingside,
-                blackCastleQueenside,
-                whiteCastleKingside,
-                whiteCastleQueenside,
-                turn,
-                turnCount,
-                selected,
-                currentMoves);
         }
 
         public override string ToString()
@@ -250,7 +228,6 @@ namespace Chess.General
         /// <returns></returns>
         public string getKingSquare(int side)
         {
-            System.Diagnostics.Debug.WriteLine("side: " + side);
             if (side == 0)
             {
                 for (int i = 0; i < 8; i++)
@@ -309,7 +286,7 @@ namespace Chess.General
             System.Diagnostics.Debug.Write("moves: ");
             foreach (string move in moves)
                 System.Diagnostics.Debug.Write(move + " ");
-            System.Diagnostics.Debug.Write("\n king: " + king);
+            System.Diagnostics.Debug.WriteLine("\n king: " + king);
             return moves.Contains(king);
         }
 
@@ -320,16 +297,29 @@ namespace Chess.General
         /// <param name="original">Position of the piece originally.</param>
         /// <param name="final">Position where the piece seeks to go.</param>
         /// <returns>If move is invalid, returns false. If valid, true.</returns>
-        public bool checkValidate(char piece, string original, string final)
+        public bool checkValidate(char piece, string original, string final, int side)
         {
             // make a copy of the board, to test this move
-            Board newBoard = new Board(this.board);
+            Board newBoard = this.deepCopy();
             newBoard.updateBoard(piece, original, final);
-            System.Diagnostics.Debug.WriteLine("this board:");
-            System.Diagnostics.Debug.WriteLine(this.ToString());
-            System.Diagnostics.Debug.WriteLine("test board:");
-            System.Diagnostics.Debug.WriteLine(newBoard.ToString());
-            return true;
+            return !newBoard.inCheck(side);
+        }
+
+        public void validateMoves()
+        {
+            foreach (string move in currentMoves.ToList())
+            {
+                System.Diagnostics.Debug.WriteLine("Validating move: " + move);
+                if (!checkValidate(selected.pieceCode, selected.pos, move, Char.IsUpper(selected.pieceCode) ? 0 : 1))
+                {
+                    System.Diagnostics.Debug.WriteLine(move + " is invalid.");
+                    currentMoves.Remove(move);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine(move + " is valid.");
+                }
+            }
         }
     }
 }

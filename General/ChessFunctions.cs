@@ -91,12 +91,6 @@ namespace Chess.General
             return col + row;
         }
 
-        // TODO: check if king is in check in given position, given a side
-        public static bool isKingInCheck(int color, Board board)
-        {
-            return false;
-        }
-
         public static List<String> getValidMoves(Piece p, Board board)
         {
             int side = Char.IsUpper(p.pieceCode) ? 0 : 1;
@@ -159,18 +153,12 @@ namespace Chess.General
                 if (!pos.Substring(0, 1).Equals("h") && Char.IsUpper(board.getSquare(diagL)) || diagL.Equals(enPassant))
                     results.Add(diagL);
             }
-            
+
             // implement promotion here?
 
-            // if move makes king in check, it is illegal
             foreach (string move in new List<String>(results))
             {
                 if (!validateSquare(move))
-                {
-                    results.Remove(move);
-                    continue;
-                }
-                if (isKingInCheck(side, board))
                 {
                     results.Remove(move);
                     continue;
@@ -203,8 +191,8 @@ namespace Chess.General
             string down_two = getVerticalSquare(pos, -2);
             results.Add(getHorizontalSquare(down_two, -1));
             results.Add(getHorizontalSquare(down_two, 1));
-            
-            // if move makes king in check, it is illegal; also check for collisions
+
+            // check for collisions
             foreach (string move in new List<String>(results))
             {
                 if (!validateSquare(move))
@@ -212,7 +200,7 @@ namespace Chess.General
                     results.Remove(move);
                     continue;
                 }
-                if (isKingInCheck(side, board) || board.isFilled(move))
+                if (board.isFilled(move))
                 {
                     results.Remove(move);
                     continue;
@@ -313,17 +301,7 @@ namespace Chess.General
                 results.Add(down);                
                 i--;
             }
-
-            // if move makes king in check, it is illegal
-            foreach (string move in new List<String>(results))
-            {
-                if (isKingInCheck(side, board))
-                {
-                    results.Remove(move);
-                    continue;
-                }
-            }
-
+            // check validation occurs in board, called in game controller
             return results;
         }
 
@@ -418,16 +396,7 @@ namespace Chess.General
                 results.Add(down);                
                 i--;
             }
-
-            // if move makes king in check, it is illegal
-            foreach (string move in new List<String>(results))
-            {
-                if (isKingInCheck(side, board))
-                {
-                    results.Remove(move);
-                    continue;
-                }
-            }
+            // check validation occurs in board, called in game controller
 
             return results;
         }
@@ -463,8 +432,9 @@ namespace Chess.General
                     results.Remove(move);
                     continue;
                 }
+                // check for collisions with pieces; valid if it is opponent's piece but not if own
                 bool oppCase = side == 0 ? Char.IsLower(board.getSquare(move)) : Char.IsUpper(board.getSquare(move));
-                if (isKingInCheck(side, board) || (board.isFilled(move) && !oppCase))
+                if (board.isFilled(move) && !oppCase)
                 {
                     results.Remove(move);
                     continue;
